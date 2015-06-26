@@ -40,8 +40,8 @@ import java.util.List;
 public class DeviceDAOImpl implements DeviceDAO {
 
 
-    private DataSource dataSource;
     private static final Log log = LogFactory.getLog(DeviceDAOImpl.class);
+    private DataSource dataSource;
 
     public DeviceDAOImpl(DataSource dataSource) {
         this.dataSource = dataSource;
@@ -264,7 +264,7 @@ public class DeviceDAOImpl implements DeviceDAO {
             while (resultSet.next()) {
                 Device device = new Device();
                 DeviceType deviceType = new DeviceType();
-                int id = resultSet.getInt(resultSet.getInt(1));
+                int id = resultSet.getInt(1);
                 deviceType.setId(id);
                 deviceType.setName(resultSet.getString(2));
                 device.setId(resultSet.getInt(3));
