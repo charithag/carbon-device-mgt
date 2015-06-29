@@ -26,7 +26,6 @@ import org.wso2.carbon.device.mgt.common.DeviceManagementException;
 import org.wso2.carbon.device.mgt.common.operation.mgt.Operation;
 import org.wso2.carbon.device.mgt.common.operation.mgt.OperationManagementException;
 import org.wso2.carbon.device.mgt.common.operation.mgt.OperationManager;
-import org.wso2.carbon.device.mgt.core.dto.operation.mgt.*;
 import org.wso2.carbon.device.mgt.core.dto.operation.mgt.PolicyOperation;
 import org.wso2.carbon.device.mgt.core.operation.mgt.dao.OperationDAO;
 import org.wso2.carbon.device.mgt.core.operation.mgt.dao.OperationManagementDAOException;

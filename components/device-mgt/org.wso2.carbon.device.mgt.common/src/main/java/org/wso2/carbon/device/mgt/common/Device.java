@@ -37,6 +37,7 @@ public class Device {
 	private String owner;
 	private List<Feature> features;
 	private List<Device.Property> properties;
+	private int groupId;
 
 	@XmlElement
 	public int getId() {
@@ -153,6 +154,15 @@ public class Device {
 
 	public void setProperties(List<Device.Property> properties) {
 		this.properties = properties;
+	}
+
+	@XmlElement
+	public int getGroupId() {
+		return groupId;
+	}
+
+	public void setGroupId(int groupId) {
+		this.groupId = groupId;
 	}
 
 	public static class Property {

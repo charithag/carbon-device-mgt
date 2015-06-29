@@ -30,6 +30,8 @@ import java.util.Map;
 //TODO :
 public class PIPDevice {
 
+    /*This will be used to record attributes to which would come from other PDPs*/
+    Map<String, Object> attributes;
     private Device device;
     private DeviceType deviceType;
     private DeviceIdentifier deviceIdentifier;
@@ -39,9 +41,7 @@ public class PIPDevice {
     private String altitude;
     private String longitude;
     private Timestamp timestamp;
-
-    /*This will be used to record attributes to which would come from other PDPs*/
-    Map<String, Object> attributes;
+    private int groupId;
 
     public Device getDevice() {
         return device;
@@ -121,5 +121,13 @@ public class PIPDevice {
 
     public void setDeviceIdentifier(DeviceIdentifier deviceIdentifier) {
         this.deviceIdentifier = deviceIdentifier;
+    }
+
+    public int getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(int groupId) {
+        this.groupId = groupId;
     }
 }
