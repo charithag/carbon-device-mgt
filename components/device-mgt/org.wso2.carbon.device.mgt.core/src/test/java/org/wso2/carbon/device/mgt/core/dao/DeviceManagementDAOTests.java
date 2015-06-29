@@ -28,14 +28,12 @@ import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
 import org.w3c.dom.Document;
 import org.wso2.carbon.device.mgt.common.DeviceManagementException;
+import org.wso2.carbon.device.mgt.common.GroupManagementException;
 import org.wso2.carbon.device.mgt.core.TestUtils;
 import org.wso2.carbon.device.mgt.core.common.DBTypes;
 import org.wso2.carbon.device.mgt.core.common.TestDBConfiguration;
 import org.wso2.carbon.device.mgt.core.common.TestDBConfigurations;
-import org.wso2.carbon.device.mgt.core.dto.Device;
-import org.wso2.carbon.device.mgt.core.dto.DeviceType;
-import org.wso2.carbon.device.mgt.core.dto.OwnerShip;
-import org.wso2.carbon.device.mgt.core.dto.Status;
+import org.wso2.carbon.device.mgt.core.dto.*;
 import org.wso2.carbon.device.mgt.core.util.DeviceManagerUtil;
 
 import javax.sql.DataSource;
@@ -45,17 +43,19 @@ import javax.xml.bind.Unmarshaller;
 import java.io.File;
 import java.sql.*;
 import java.util.Date;
+import java.util.List;
 
 public class DeviceManagementDAOTests {
 
-    private DataSource dataSource;
     private static final Log log = LogFactory.getLog(DeviceManagementDAOTests.class);
+    private DataSource dataSource;
 
     @AfterClass
     public void deleteData() throws Exception{
         Connection connection = dataSource.getConnection();
         connection.createStatement().execute("DELETE FROM DM_DEVICE");
         connection.createStatement().execute("DELETE FROM DM_DEVICE_TYPE");
+        connection.createStatement().execute("DELETE FROM DM_GROUP");
     }
 
     @BeforeClass
@@ -74,6 +74,7 @@ public class DeviceManagementDAOTests {
                 dataSource = new org.apache.tomcat.jdbc.pool.DataSource(properties);
                 this.initSQLScript();
                 DeviceManagementDAOFactory.init(dataSource);
+                GroupManagementDAOFactory.init(dataSource);
             default:
         }
     }
@@ -143,8 +144,32 @@ public class DeviceManagementDAOTests {
         deviceType.setId(id);
     }
 
-    @Test(dependsOnMethods = {"addDeviceTypeTest"})
-    public void addDeviceTest() throws DeviceManagementDAOException, DeviceManagementException {
+    @Test
+    public void addGroupTest() throws GroupManagementDAOException, GroupManagementException {
+        GroupDAO groupMgtDAO = GroupManagementDAOFactory.getGroupDAO();
+
+        Group group = new Group();
+        group.setName("Test Group");
+        group.setDateOfEnrollment(new Date().getTime());
+        group.setDateOfLastUpdate(new Date().getTime());
+        group.setDescription("test group description");
+        group.setOwnerShip(OwnerShip.BYOD.toString());
+        group.setOwnerId("111");
+        group.setTenantId(-1234);
+        groupMgtDAO.addGroup(group);
+    }
+
+    private int getGroupId() throws GroupManagementDAOException {
+        GroupDAO groupMgtDAO = GroupManagementDAOFactory.getGroupDAO();
+        List<Group> groupList = groupMgtDAO.getGroups();
+        if (!groupList.isEmpty()) {
+            return groupList.get(0).getId();
+        }
+        return -1;
+    }
+
+    @Test(dependsOnMethods = {"addDeviceTypeTest", "addGroupTest"})
+    public void addDeviceTest() throws DeviceManagementDAOException, DeviceManagementException, GroupManagementDAOException {
         DeviceDAO deviceMgtDAO = DeviceManagementDAOFactory.getDeviceDAO();
 
         Device device = new Device();
@@ -161,6 +186,7 @@ public class DeviceManagementDAOTests {
         device.setOwnerShip(OwnerShip.BYOD.toString());
         device.setOwnerId("111");
         device.setTenantId(-1234);
+        device.setGroupId(getGroupId());
         deviceMgtDAO.addDevice(device);
 
         Connection conn = null;

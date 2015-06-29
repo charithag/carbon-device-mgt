@@ -35,6 +35,7 @@ public class Device implements Serializable {
     private int tenantId;
     private int deviceTypeId;
 	private DeviceType deviceType;
+    private int groupId;
 
 	public DeviceType getDeviceType() {
 		return deviceType;
@@ -100,24 +101,24 @@ public class Device implements Serializable {
         this.deviceIdentificationId = deviceIdentificationId;
     }
 
-    public void setOwnerShip(String ownerShip) {
-        this.ownerShip = ownerShip;
-    }
-
     public String getOwnerShip() {
         return ownerShip;
+    }
+
+    public void setOwnerShip(String ownerShip) {
+        this.ownerShip = ownerShip;
     }
 
     public Status getStatus() {
         return status;
     }
 
-    public String getOwnerId() {
-        return ownerId;
-    }
-
     public void setStatus(Status status) {
         this.status = status;
+    }
+
+    public String getOwnerId() {
+        return ownerId;
     }
 
     public void setOwnerId(String ownerId) {
@@ -130,5 +131,13 @@ public class Device implements Serializable {
 
     public void setTenantId(int tenantId) {
         this.tenantId = tenantId;
+    }
+
+    public int getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(int groupId) {
+        this.groupId = groupId;
     }
 }

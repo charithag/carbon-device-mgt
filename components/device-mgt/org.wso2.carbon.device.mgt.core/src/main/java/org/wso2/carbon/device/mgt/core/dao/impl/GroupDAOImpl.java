@@ -22,11 +22,16 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.device.mgt.core.dao.GroupDAO;
 import org.wso2.carbon.device.mgt.core.dao.GroupManagementDAOException;
+import org.wso2.carbon.device.mgt.core.dao.util.GroupManagementDAOUtil;
 import org.wso2.carbon.device.mgt.core.dto.Group;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class GroupDAOImpl implements GroupDAO {
@@ -41,7 +46,31 @@ public class GroupDAOImpl implements GroupDAO {
 
     @Override
     public void addGroup(Group group) throws GroupManagementDAOException {
-
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        try {
+            conn = this.getConnection();
+            String sql =
+                    "INSERT INTO DM_GROUP(DESCRIPTION, NAME, DATE_OF_ENROLLMENT, DATE_OF_LAST_UPDATE, " +
+                            "OWNERSHIP, OWNER, TENANT_ID) " +
+                            "VALUES (?, ?, ?, ?, ?, ?, ?)";
+            stmt = conn.prepareStatement(sql);
+            stmt.setString(1, group.getDescription());
+            stmt.setString(2, group.getName());
+            stmt.setLong(3, new Date().getTime());
+            stmt.setLong(4, new Date().getTime());
+            stmt.setString(5, group.getOwnerShip());
+            stmt.setString(6, group.getOwnerId());
+            stmt.setInt(7, group.getTenantId());
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            String msg = "Error occurred while adding group " +
+                    "'" + group.getName() + "'";
+            log.error(msg, e);
+            throw new GroupManagementDAOException(msg, e);
+        } finally {
+            GroupManagementDAOUtil.cleanupResources(conn, stmt, null);
+        }
     }
 
     @Override
@@ -61,7 +90,38 @@ public class GroupDAOImpl implements GroupDAO {
 
     @Override
     public List<Group> getGroups() throws GroupManagementDAOException {
-        return null;
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet resultSet = null;
+        List<Group> groupList = null;
+        try {
+            conn = this.getConnection();
+            String selectDBQueryForType = "SELECT ID, DESCRIPTION, NAME, DATE_OF_ENROLLMENT, " +
+                    "DATE_OF_LAST_UPDATE, OWNERSHIP, OWNER, TENANT_ID FROM DM_GROUP ";
+            stmt = conn.prepareStatement(selectDBQueryForType);
+            resultSet = stmt.executeQuery();
+            groupList = new ArrayList<Group>();
+            while (resultSet.next()) {
+                Group group = new Group();
+                group.setId(resultSet.getInt(1));
+                group.setDescription(resultSet.getString(2));
+                group.setName(resultSet.getString(3));
+                group.setDateOfEnrollment(resultSet.getLong(4));
+                group.setDateOfLastUpdate(resultSet.getLong(5));
+                //TODO:- Ownership is not a enum in DeviceDAO
+                group.setOwnerShip(resultSet.getString(6));
+                group.setOwnerId(resultSet.getString(7));
+                group.setTenantId(resultSet.getInt(8));
+                groupList.add(group);
+            }
+        } catch (SQLException e) {
+            String msg = "Error occurred while listing all groups";
+            log.error(msg, e);
+            throw new GroupManagementDAOException(msg, e);
+        } finally {
+            GroupManagementDAOUtil.cleanupResources(conn, stmt, resultSet);
+        }
+        return groupList;
     }
 
     @Override
