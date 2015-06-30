@@ -82,6 +82,36 @@ public class DeviceManagementServiceImpl implements DeviceManagementService {
         return DeviceManagementDataHolder.getInstance().getDeviceManagementProvider().getDeviceListOfUser(username);
     }
 
+    @Override
+    public void addGroup(Group group) throws GroupManagementException {
+        DeviceManagementDataHolder.getInstance().getDeviceManagementProvider().addGroup(group);
+    }
+
+    @Override
+    public void modifyGroup(Group group) throws GroupManagementException {
+        DeviceManagementDataHolder.getInstance().getDeviceManagementProvider().modifyGroup(group);
+    }
+
+    @Override
+    public void removeGroup(int groupId) throws GroupManagementException {
+        DeviceManagementDataHolder.getInstance().getDeviceManagementProvider().removeGroup(groupId);
+    }
+
+    @Override
+    public List<Group> getAllGroups() throws GroupManagementException {
+        return DeviceManagementDataHolder.getInstance().getDeviceManagementProvider().getAllGroups();
+    }
+
+    @Override
+    public Group getGroup(int groupId) throws GroupManagementException {
+        return null;
+    }
+
+    @Override
+    public List<Group> getGroupListOfUser(String username) throws GroupManagementException {
+        return DeviceManagementDataHolder.getInstance().getDeviceManagementProvider().getGroupListOfUser(username);
+    }
+
     public FeatureManager getFeatureManager(String type) throws DeviceManagementException {
         return DeviceManagementDataHolder.getInstance().getDeviceManagementProvider().getFeatureManager(type);
     }
@@ -218,8 +248,20 @@ public class DeviceManagementServiceImpl implements DeviceManagementService {
     }
 
     @Override
+    public int getGroupCount() throws GroupManagementException {
+        return DeviceManagementDataHolder.getInstance().getDeviceManagementProvider()
+                .getGroupCount();
+    }
+
+    @Override
     public List<Device> getDevicesByName(String deviceName, int tenantId) throws DeviceManagementException {
         return DeviceManagementDataHolder.getInstance().getDeviceManagementProvider()
                                     .getDevicesByName(deviceName, tenantId);
+    }
+
+    @Override
+    public List<Group> getGroupsByName(String groupName, int tenantId) throws GroupManagementException {
+        return DeviceManagementDataHolder.getInstance().getDeviceManagementProvider()
+                .getGroupsByName(groupName, tenantId);
     }
 }

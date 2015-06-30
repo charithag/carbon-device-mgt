@@ -18,23 +18,31 @@
 package org.wso2.carbon.device.mgt.core.service;
 
 import org.wso2.carbon.device.mgt.common.*;
-import org.wso2.carbon.device.mgt.common.app.mgt.AppManagerConnector;
-import org.wso2.carbon.device.mgt.common.spi.DeviceManager;
 import org.wso2.carbon.device.mgt.common.license.mgt.LicenseManager;
 import org.wso2.carbon.device.mgt.common.operation.mgt.OperationManager;
+import org.wso2.carbon.device.mgt.common.spi.DeviceManager;
+import org.wso2.carbon.device.mgt.common.spi.GroupManager;
+
 import java.util.List;
 
 /**
  * Proxy class for all Device Management related operations that take the corresponding plugin type in
  * and resolve the appropriate plugin implementation
  */
-public interface DeviceManagementService extends DeviceManager, LicenseManager, OperationManager {
+public interface DeviceManagementService extends DeviceManager, GroupManager, LicenseManager, OperationManager {
 
     List<Device> getAllDevices(String type) throws DeviceManagementException;
 
     List<Device> getAllDevices() throws DeviceManagementException;
 
     List<Device> getDeviceListOfUser(String username) throws DeviceManagementException;
+
+    /**
+     * @param username of the user
+     * @return List of all available groups
+     * @throws GroupManagementException
+     */
+    List<Group> getGroupListOfUser(String username) throws GroupManagementException;
 
     void sendEnrolmentInvitation(EmailMessageProperties config) throws DeviceManagementException;
 
@@ -79,6 +87,14 @@ public interface DeviceManagementService extends DeviceManager, LicenseManager, 
     int getDeviceCount() throws DeviceManagementException;
 
     /**
+     * Method to get the count of all groups.
+     * @return group count
+     * @throws GroupManagementException If some unusual behaviour is observed while counting
+     * the devices
+     */
+    int getGroupCount() throws GroupManagementException;
+
+    /**
      * Method to get the list of devices that matches with the given device name.
      *
      * @param deviceName    name of the device
@@ -87,4 +103,14 @@ public interface DeviceManagementService extends DeviceManager, LicenseManager, 
      * device list
      */
     List<Device> getDevicesByName(String deviceName, int tenantId) throws DeviceManagementException;
+
+    /**
+     * Method to get the list of groups that matches with the given group name.
+     *
+     * @param groupName name of the group
+     * @return List of groups that matches with the given group name.
+     * @throws GroupManagementException If some unusual behaviour is observed while fetching the
+     *                                  device list
+     */
+    List<Group> getGroupsByName(String groupName, int tenantId) throws GroupManagementException;
 }

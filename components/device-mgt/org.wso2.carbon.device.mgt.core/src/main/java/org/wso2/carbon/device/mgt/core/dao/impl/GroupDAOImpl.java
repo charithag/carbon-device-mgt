@@ -20,10 +20,10 @@ package org.wso2.carbon.device.mgt.core.dao.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.wso2.carbon.device.mgt.common.Group;
 import org.wso2.carbon.device.mgt.core.dao.GroupDAO;
 import org.wso2.carbon.device.mgt.core.dao.GroupManagementDAOException;
 import org.wso2.carbon.device.mgt.core.dao.util.GroupManagementDAOUtil;
-import org.wso2.carbon.device.mgt.core.dto.Group;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -106,7 +106,7 @@ public class GroupDAOImpl implements GroupDAO {
                 group.setId(resultSet.getInt(1));
                 group.setDescription(resultSet.getString(2));
                 group.setName(resultSet.getString(3));
-                group.setDateOfEnrollment(resultSet.getLong(4));
+                group.setDateOfCreation(resultSet.getLong(4));
                 group.setDateOfLastUpdate(resultSet.getLong(5));
                 //TODO:- Ownership is not a enum in DeviceDAO
                 group.setOwnerShip(resultSet.getString(6));
@@ -126,7 +126,40 @@ public class GroupDAOImpl implements GroupDAO {
 
     @Override
     public List<Group> getGroupListOfUser(String username, int tenantId) throws GroupManagementDAOException {
-        return null;
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet resultSet = null;
+        List<Group> groupList = null;
+        try {
+            conn = this.getConnection();
+            String selectDBQueryForUser = "SELECT ID, DESCRIPTION, NAME, DATE_OF_ENROLLMENT, " +
+                    "DATE_OF_LAST_UPDATE, OWNERSHIP, OWNER, TENANT_ID FROM DM_GROUP WHERE OWNER = ? AND TENANT_ID = ?";
+            stmt = conn.prepareStatement(selectDBQueryForUser);
+            stmt.setString(1, username);
+            stmt.setInt(2, tenantId);
+            resultSet = stmt.executeQuery();
+            groupList = new ArrayList<Group>();
+            while (resultSet.next()) {
+                Group group = new Group();
+                group.setId(resultSet.getInt(1));
+                group.setDescription(resultSet.getString(2));
+                group.setName(resultSet.getString(3));
+                group.setDateOfCreation(resultSet.getLong(4));
+                group.setDateOfLastUpdate(resultSet.getLong(5));
+                //TODO:- Ownership is not a enum in DeviceDAO
+                group.setOwnerShip(resultSet.getString(6));
+                group.setOwnerId(resultSet.getString(7));
+                group.setTenantId(resultSet.getInt(8));
+                groupList.add(group);
+            }
+        } catch (SQLException e) {
+            String msg = "Error occurred while listing all groups";
+            log.error(msg, e);
+            throw new GroupManagementDAOException(msg, e);
+        } finally {
+            GroupManagementDAOUtil.cleanupResources(conn, stmt, resultSet);
+        }
+        return groupList;
     }
 
     @Override

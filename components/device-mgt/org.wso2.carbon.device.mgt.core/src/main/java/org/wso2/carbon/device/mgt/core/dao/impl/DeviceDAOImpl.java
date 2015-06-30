@@ -68,7 +68,11 @@ public class DeviceDAOImpl implements DeviceDAO {
             stmt.setString(8, device.getDeviceIdentificationId());
             stmt.setString(9, device.getOwnerId());
             stmt.setInt(10, device.getTenantId());
-            stmt.setInt(11, device.getGroupId());
+            if (device.getGroupId() > 0) {
+                stmt.setInt(11, device.getGroupId());
+            } else {
+                stmt.setNull(11, java.sql.Types.INTEGER);
+            }
             stmt.executeUpdate();
         } catch (SQLException e) {
             throw new DeviceManagementDAOException("Error occurred while enrolling device " +
@@ -149,7 +153,7 @@ public class DeviceDAOImpl implements DeviceDAO {
         try {
             conn = this.getConnection();
             String selectDBQueryForType = "SELECT ID, DESCRIPTION, NAME, DATE_OF_ENROLLMENT, " +
-                                          "DATE_OF_LAST_UPDATE, OWNERSHIP, STATUS, DEVICE_TYPE_ID, " +
+                    "DATE_OF_LAST_UPDATE, OWNERSHIP, STATUS, DEVICE_TYPE_ID, " +
                     "DEVICE_IDENTIFICATION, OWNER, TENANT_ID, GROUP_ID FROM DM_DEVICE ";
             stmt = conn.prepareStatement(selectDBQueryForType);
             resultSet = stmt.executeQuery();
@@ -290,18 +294,19 @@ public class DeviceDAOImpl implements DeviceDAO {
         return devicesList;
     }
 
-    @Override public List<Device> getDeviceListOfUser(String username, int tenantId) throws DeviceManagementDAOException {
+    @Override
+    public List<Device> getDeviceListOfUser(String username, int tenantId) throws DeviceManagementDAOException {
         Connection conn = this.getConnection();
         PreparedStatement stmt = null;
         List<Device> deviceList = new ArrayList<Device>();
         try {
             stmt = conn.prepareStatement(
                     "SELECT DM_DEVICE_TYPE.ID, DM_DEVICE_TYPE.NAME, DM_DEVICE.ID, DM_DEVICE.DESCRIPTION, " +
-                        "DM_DEVICE.NAME, DM_DEVICE.DATE_OF_ENROLLMENT, DM_DEVICE.DATE_OF_LAST_UPDATE, " +
+                            "DM_DEVICE.NAME, DM_DEVICE.DATE_OF_ENROLLMENT, DM_DEVICE.DATE_OF_LAST_UPDATE, " +
                             "DM_DEVICE.OWNERSHIP, DM_DEVICE.STATUS, DM_DEVICE.DEVICE_TYPE_ID, " +
                             "DM_DEVICE.DEVICE_IDENTIFICATION, DM_DEVICE.OWNER, DM_DEVICE.TENANT_ID, DM_DEVICE.GROUP_ID FROM " +
-                                    "DM_DEVICE, DM_DEVICE_TYPE WHERE DM_DEVICE.DEVICE_TYPE_ID = DM_DEVICE_TYPE.ID " +
-                                        "AND DM_DEVICE.OWNER =? AND DM_DEVICE.TENANT_ID =?");
+                            "DM_DEVICE, DM_DEVICE_TYPE WHERE DM_DEVICE.DEVICE_TYPE_ID = DM_DEVICE_TYPE.ID " +
+                            "AND DM_DEVICE.OWNER =? AND DM_DEVICE.TENANT_ID =?");
             stmt.setString(1, username);
             stmt.setInt(2, tenantId);
             ResultSet resultSet = stmt.executeQuery();
@@ -349,6 +354,7 @@ public class DeviceDAOImpl implements DeviceDAO {
 
     /**
      * Get device count of all devices.
+     *
      * @return device count
      * @throws DeviceManagementDAOException
      */
@@ -392,11 +398,11 @@ public class DeviceDAOImpl implements DeviceDAO {
         try {
             stmt = conn.prepareStatement(
                     "SELECT DM_DEVICE_TYPE.ID, DM_DEVICE_TYPE.NAME, DM_DEVICE.ID, DM_DEVICE.DESCRIPTION, " +
-                    "DM_DEVICE.NAME, DM_DEVICE.DATE_OF_ENROLLMENT, DM_DEVICE.DATE_OF_LAST_UPDATE, " +
-                    "DM_DEVICE.OWNERSHIP, DM_DEVICE.STATUS, DM_DEVICE.DEVICE_TYPE_ID, " +
+                            "DM_DEVICE.NAME, DM_DEVICE.DATE_OF_ENROLLMENT, DM_DEVICE.DATE_OF_LAST_UPDATE, " +
+                            "DM_DEVICE.OWNERSHIP, DM_DEVICE.STATUS, DM_DEVICE.DEVICE_TYPE_ID, " +
                             "DM_DEVICE.DEVICE_IDENTIFICATION, DM_DEVICE.OWNER, DM_DEVICE.TENANT_ID, DM_DEVICE.GROUP_ID FROM " +
-                    "DM_DEVICE, DM_DEVICE_TYPE WHERE DM_DEVICE.DEVICE_TYPE_ID = DM_DEVICE_TYPE.ID " +
-                    "AND DM_DEVICE.NAME LIKE ? AND DM_DEVICE.TENANT_ID =?");
+                            "DM_DEVICE, DM_DEVICE_TYPE WHERE DM_DEVICE.DEVICE_TYPE_ID = DM_DEVICE_TYPE.ID " +
+                            "AND DM_DEVICE.NAME LIKE ? AND DM_DEVICE.TENANT_ID =?");
             stmt.setString(1, deviceName + "%");
             stmt.setInt(2, tenantId);
             ResultSet resultSet = stmt.executeQuery();

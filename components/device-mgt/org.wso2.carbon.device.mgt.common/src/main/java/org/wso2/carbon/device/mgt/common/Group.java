@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.carbon.device.mgt.core.dto;
+package org.wso2.carbon.device.mgt.common;
 
 import java.io.Serializable;
 
@@ -26,7 +26,7 @@ public class Group implements Serializable {
     private int id;
     private String description;
     private String name;
-    private Long dateOfEnrollment;
+    private Long dateOfCreation;
     private Long dateOfLastUpdate;
     private String ownerId;
     private String ownerShip;
@@ -56,12 +56,12 @@ public class Group implements Serializable {
         this.name = name;
     }
 
-    public Long getDateOfEnrollment() {
-        return dateOfEnrollment;
+    public Long getDateOfCreation() {
+        return dateOfCreation;
     }
 
-    public void setDateOfEnrollment(Long dateOfEnrollment) {
-        this.dateOfEnrollment = dateOfEnrollment;
+    public void setDateOfCreation(Long dateOfCreation) {
+        this.dateOfCreation = dateOfCreation;
     }
 
     public Long getDateOfLastUpdate() {

@@ -24,6 +24,7 @@ import org.wso2.carbon.device.mgt.core.config.datasource.DataSourceConfig;
 import org.wso2.carbon.device.mgt.core.config.datasource.JNDILookupDefinition;
 import org.wso2.carbon.device.mgt.core.dao.impl.DeviceDAOImpl;
 import org.wso2.carbon.device.mgt.core.dao.impl.DeviceTypeDAOImpl;
+import org.wso2.carbon.device.mgt.core.dao.impl.GroupDAOImpl;
 import org.wso2.carbon.device.mgt.core.dao.util.DeviceManagementDAOUtil;
 
 import javax.sql.DataSource;
@@ -32,11 +33,15 @@ import java.util.List;
 
 public class DeviceManagementDAOFactory {
 
-	private static DataSource dataSource;
 	private static final Log log = LogFactory.getLog(DeviceManagementDAOFactory.class);
+	private static DataSource dataSource;
 
 	public static DeviceDAO getDeviceDAO() {
 		return new DeviceDAOImpl(dataSource);
+	}
+
+	public static GroupDAO getGroupDAO() {
+		return new GroupDAOImpl(dataSource);
 	}
 
 	public static DeviceTypeDAO getDeviceTypeDAO() {

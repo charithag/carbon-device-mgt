@@ -27,10 +27,10 @@ import org.testng.annotations.Test;
 import org.w3c.dom.Document;
 import org.wso2.carbon.device.mgt.common.DeviceIdentifier;
 import org.wso2.carbon.device.mgt.common.Feature;
+import org.wso2.carbon.device.mgt.common.Group;
 import org.wso2.carbon.device.mgt.common.GroupManagementException;
 import org.wso2.carbon.device.mgt.core.dao.*;
 import org.wso2.carbon.device.mgt.core.dto.Device;
-import org.wso2.carbon.device.mgt.core.dto.Group;
 import org.wso2.carbon.device.mgt.core.dto.OwnerShip;
 import org.wso2.carbon.policy.mgt.common.*;
 import org.wso2.carbon.policy.mgt.core.common.DBTypes;
@@ -108,7 +108,6 @@ public class PolicyDAOTestCase {
 
             default:
         }
-        GroupManagementDAOFactory.init(dataSource);
     }
 
     private TestDBConfiguration getTestDBConfiguration(DBTypes dbType) throws PolicyManagerDAOException,
@@ -173,11 +172,11 @@ public class PolicyDAOTestCase {
 
     @Test
     public void addGroupTest() throws GroupManagementDAOException, GroupManagementException {
-        GroupDAO groupMgtDAO = GroupManagementDAOFactory.getGroupDAO();
+        GroupDAO groupMgtDAO = DeviceManagementDAOFactory.getGroupDAO();
 
         Group group = new Group();
         group.setName("Test Group");
-        group.setDateOfEnrollment(new Date().getTime());
+        group.setDateOfCreation(new Date().getTime());
         group.setDateOfLastUpdate(new Date().getTime());
         group.setDescription("test group description");
         group.setOwnerShip(OwnerShip.BYOD.toString());
@@ -187,7 +186,7 @@ public class PolicyDAOTestCase {
     }
 
     private int getGroupId() throws GroupManagementDAOException {
-        GroupDAO groupMgtDAO = GroupManagementDAOFactory.getGroupDAO();
+        GroupDAO groupMgtDAO = DeviceManagementDAOFactory.getGroupDAO();
         List<Group> groupList = groupMgtDAO.getGroups();
         if (!groupList.isEmpty()) {
             return groupList.get(0).getId();
