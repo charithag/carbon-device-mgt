@@ -18,10 +18,12 @@
 package org.wso2.carbon.device.mgt.core.service;
 
 import org.wso2.carbon.device.mgt.common.*;
+import org.wso2.carbon.device.mgt.common.Device;
 import org.wso2.carbon.device.mgt.common.license.mgt.LicenseManager;
 import org.wso2.carbon.device.mgt.common.operation.mgt.OperationManager;
 import org.wso2.carbon.device.mgt.common.spi.DeviceManager;
 import org.wso2.carbon.device.mgt.common.spi.GroupManager;
+import org.wso2.carbon.device.mgt.core.dao.DeviceManagementDAOException;
 
 import java.util.List;
 
@@ -36,6 +38,8 @@ public interface DeviceManagementService extends DeviceManager, GroupManager, Li
     List<Device> getAllDevices() throws DeviceManagementException;
 
     List<Device> getDeviceListOfUser(String username) throws DeviceManagementException;
+
+    List<Device> getDevicesByGroup(int groupId) throws DeviceManagementDAOException;
 
     /**
      * @param username of the user

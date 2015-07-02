@@ -54,10 +54,11 @@ public interface DeviceDAO {
 
 	/**
 	 * @param groupId - The group id.
+	 * @param tenantId
 	 * @return a list of devices in specified group
 	 * @throws DeviceManagementDAOException
 	 */
-	List<Device> getDevicesByGroup(int groupId) throws DeviceManagementDAOException;
+	List<Device> getDevicesByGroup(int groupId, int tenantId) throws DeviceManagementDAOException;
 
 	/**
 	 * Get the list of devices belongs to a user.

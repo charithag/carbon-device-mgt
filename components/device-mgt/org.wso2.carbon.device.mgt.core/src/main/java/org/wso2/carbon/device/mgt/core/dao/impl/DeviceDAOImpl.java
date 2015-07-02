@@ -254,7 +254,7 @@ public class DeviceDAOImpl implements DeviceDAO {
     }
 
     @Override
-    public List<Device> getDevicesByGroup(int groupId) throws DeviceManagementDAOException {
+    public List<Device> getDevicesByGroup(int groupId, int tenantId) throws DeviceManagementDAOException {
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet resultSet = null;
@@ -262,9 +262,10 @@ public class DeviceDAOImpl implements DeviceDAO {
         try {
             conn = this.getConnection();
             String selectDBQueryForType = "SELECT ID, DESCRIPTION, NAME, DATE_OF_ENROLLMENT, DATE_OF_LAST_UPDATE, OWNERSHIP, STATUS, DEVICE_TYPE_ID, DEVICE_IDENTIFICATION, OWNER, TENANT_ID, GROUP_ID FROM DM_DEVICE " +
-                    "WHERE DM_DEVICE.GROUP_ID = ?";
+                    "WHERE DM_DEVICE.GROUP_ID = ? AND DM_DEVICE.TENANT_ID = ?";
             stmt = conn.prepareStatement(selectDBQueryForType);
             stmt.setInt(1, groupId);
+            stmt.setInt(2, tenantId);
             resultSet = stmt.executeQuery();
             devicesList = new ArrayList<Device>();
             while (resultSet.next()) {
