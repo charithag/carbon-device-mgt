@@ -84,7 +84,7 @@ public class DeviceManagementServiceImpl implements DeviceManagementService {
     }
 
     @Override
-    public List<Device> getDevicesByGroup(int groupId) throws DeviceManagementDAOException {
+    public List<Device> getDevicesByGroup(int groupId) throws DeviceManagementException {
         return DeviceManagementDataHolder.getInstance().getDeviceManagementProvider().getDevicesByGroup(groupId);
     }
 

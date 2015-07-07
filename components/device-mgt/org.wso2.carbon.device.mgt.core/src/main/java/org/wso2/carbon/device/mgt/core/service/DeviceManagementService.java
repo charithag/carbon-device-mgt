@@ -39,7 +39,7 @@ public interface DeviceManagementService extends DeviceManager, GroupManager, Li
 
     List<Device> getDeviceListOfUser(String username) throws DeviceManagementException;
 
-    List<Device> getDevicesByGroup(int groupId) throws DeviceManagementDAOException;
+    List<Device> getDevicesByGroup(int groupId) throws DeviceManagementException;
 
     /**
      * @param username of the user

@@ -280,7 +280,7 @@ public class DeviceManagementServiceProviderImpl implements DeviceManagementServ
     }
 
     @Override
-    public List<Device> getDevicesByGroup(int groupId) throws DeviceManagementDAOException {
+    public List<Device> getDevicesByGroup(int groupId) throws DeviceManagementException {
         List<Device> devicesInGroup = new ArrayList<Device>();
         try {
             int tenantId = DeviceManagerUtil.getTenantId();
@@ -301,8 +301,8 @@ public class DeviceManagementServiceProviderImpl implements DeviceManagementServ
                 }
                 devicesInGroup.add(convertedDevice);
             }
-        } catch (DeviceManagementException e) {
-            throw new DeviceManagementDAOException("Error occurred while obtaining devices for group " +
+        } catch (DeviceManagementDAOException e) {
+            throw new DeviceManagementException("Error occurred while obtaining devices for group " +
                     "'" + groupId + "'", e);
         }
         return devicesInGroup;
