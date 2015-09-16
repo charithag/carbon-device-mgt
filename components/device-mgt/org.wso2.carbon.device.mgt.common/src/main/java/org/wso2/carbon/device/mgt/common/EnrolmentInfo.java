@@ -18,7 +18,11 @@
  */
 package org.wso2.carbon.device.mgt.common;
 
-public class EnrolmentInfo {
+import java.io.Serializable;
+
+public class EnrolmentInfo implements Serializable {
+
+    private static final long serialVersionUID = 1998101712L;
 
     public enum Status {
         CREATED, ACTIVE, INACTIVE, UNREACHABLE, UNCLAIMED, SUSPENDED, BLOCKED, REMOVED, DISENROLLMENT_REQUESTED
@@ -28,6 +32,7 @@ public class EnrolmentInfo {
         BYOD, COPE
     }
 
+    private int id;
     private Device device;
     private Long dateOfEnrolment;
     private Long dateOfLastUpdate;
@@ -35,13 +40,22 @@ public class EnrolmentInfo {
     private Status status;
     private String owner;
 
-    public EnrolmentInfo() {}
+    public EnrolmentInfo() {
+    }
 
     public EnrolmentInfo(Device device, String owner, OwnerShip ownership, Status status) {
         this.device = device;
         this.owner = owner;
         this.ownership = ownership;
         this.status = status;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public Long getDateOfEnrolment() {
@@ -96,19 +110,12 @@ public class EnrolmentInfo {
     public boolean equals(Object obj) {
         if (obj instanceof EnrolmentInfo) {
             EnrolmentInfo tempInfo = (EnrolmentInfo) obj;
-            if (owner != null && ownership != null
-                && tempInfo.getOwner() != null && tempInfo.getOwnership() != null) {
-
-                if (owner.equals(tempInfo.getOwner()) && ownership.equals(tempInfo.getOwnership())) {
+            if (this.owner != null && this.ownership != null) {
+                if (this.owner.equals(tempInfo.getOwner()) && this.ownership.equals(tempInfo.getOwnership())) {
                     return true;
-                } else {
-                    return false;
                 }
-            } else {
-                return false;
             }
-        } else {
-            return false;
         }
+        return false;
     }
 }

@@ -24,11 +24,13 @@ import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.device.mgt.common.Device;
 import org.wso2.carbon.device.mgt.common.EnrolmentInfo;
+import org.wso2.carbon.device.mgt.core.dao.DeviceManagementDAOException;
 import org.wso2.carbon.device.mgt.core.dao.DeviceManagementDAOFactory;
 import org.wso2.carbon.device.mgt.core.dao.DeviceTypeDAO;
 import org.wso2.carbon.device.mgt.core.dto.DeviceType;
 import org.wso2.carbon.device.mgt.core.service.DeviceManagementProviderService;
 import org.wso2.carbon.ntask.core.Task;
+import org.wso2.carbon.policy.mgt.common.monitor.PolicyComplianceException;
 import org.wso2.carbon.policy.mgt.common.spi.PolicyMonitoringService;
 import org.wso2.carbon.policy.mgt.core.internal.PolicyManagementDataHolder;
 import org.wso2.carbon.policy.mgt.core.mgt.MonitoringManager;
@@ -63,49 +65,72 @@ public class MonitoringTask implements Task {
             log.debug("Monitoring task started to run.");
         }
 
+        MonitoringManager monitoringManager = new MonitoringManagerImpl();
+
+        List<DeviceType> deviceTypes = new ArrayList<>();
         try {
-            int tenantId = PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantId();
-            List<DeviceType> deviceTypes = deviceTypeDAO.getDeviceTypes(tenantId);
-            DeviceManagementProviderService deviceManagementProviderService =
-                    PolicyManagementDataHolder.getInstance().getDeviceManagementService();
-            MonitoringManager monitoringManager = new MonitoringManagerImpl();
 
-            for (DeviceType deviceType : deviceTypes) {
-                PolicyMonitoringService monitoringService =
-                        PolicyManagementDataHolder.getInstance().getPolicyMonitoringService(deviceType.getName());
-                List<Device> devices = deviceManagementProviderService.getAllDevices(deviceType.getName());
-                if (monitoringService != null && !devices.isEmpty()) {
-                    monitoringManager.addMonitoringOperation(devices);
+            deviceTypes = monitoringManager.getDeviceTypes();
+        } catch (PolicyComplianceException e) {
+            log.error("Error occurred while getting the device types.");
+        }
 
-                    List<Device> notifiableDevices = new ArrayList<>();
+        if (!deviceTypes.isEmpty()) {
+            try {
+
+
+                DeviceManagementProviderService deviceManagementProviderService =
+                        PolicyManagementDataHolder.getInstance().getDeviceManagementService();
+
+                for (DeviceType deviceType : deviceTypes) {
 
                     if (log.isDebugEnabled()) {
-                        log.debug("Removing inactive and blocked devices from the list for the device type : " +
-                                deviceType);
+                        log.debug("Running task for device type : " + deviceType.getName());
                     }
-                    for (Device device : devices) {
-                        if (device.getEnrolmentInfo().getStatus().equals(EnrolmentInfo.Status.INACTIVE) ||
-                                device.getEnrolmentInfo().getStatus().equals(EnrolmentInfo.Status.BLOCKED)) {
-                            continue;
-                        } else {
-                            notifiableDevices.add(device);
+
+                    PolicyMonitoringService monitoringService =
+                            PolicyManagementDataHolder.getInstance().getPolicyMonitoringService(deviceType.getName());
+                    List<Device> devices = deviceManagementProviderService.getAllDevices(deviceType.getName());
+                    if (monitoringService != null && !devices.isEmpty()) {
+                        monitoringManager.addMonitoringOperation(devices);
+
+                        List<Device> notifiableDevices = new ArrayList<>();
+
+                        if (log.isDebugEnabled()) {
+                            log.debug("Removing inactive and blocked devices from the list for the device type : " +
+                                    deviceType.getName());
                         }
-                    }
-                    if (log.isDebugEnabled()) {
-                        log.debug("Following devices selected to send the notification for " + deviceType);
-                        for (Device device : notifiableDevices) {
-                            log.debug(device.getDeviceIdentifier());
+                        for (Device device : devices) {
+                            EnrolmentInfo.Status status = device.getEnrolmentInfo().getStatus();
+                            if (status.equals(EnrolmentInfo.Status.INACTIVE) ||
+                                    status.equals(EnrolmentInfo.Status.BLOCKED) ||
+                                    status.equals(EnrolmentInfo.Status.REMOVED) ||
+                                    status.equals(EnrolmentInfo.Status.UNCLAIMED) ||
+                                    status.equals(EnrolmentInfo.Status.DISENROLLMENT_REQUESTED) ||
+                                    status.equals(EnrolmentInfo.Status.SUSPENDED)) {
+                                continue;
+                            } else {
+                                notifiableDevices.add(device);
+                            }
                         }
+                        if (log.isDebugEnabled()) {
+                            log.debug("Following devices selected to send the notification for " +
+                                    deviceType.getName());
+                            for (Device device : notifiableDevices) {
+                                log.debug(device.getDeviceIdentifier());
+                            }
+                        }
+                        monitoringService.notifyDevices(notifiableDevices);
                     }
-                    monitoringService.notifyDevices(notifiableDevices);
                 }
+                if (log.isDebugEnabled()) {
+                    log.debug("Monitoring task running completed.");
+                }
+            } catch (Exception e) {
+                log.error("Error occurred while trying to run a task.", e);
             }
-            if (log.isDebugEnabled()) {
-                log.debug("Monitoring task running completed.");
-            }
-        } catch (Exception e) {
-            String msg = "Error occurred while trying to run a task.";
-            log.error(msg, e);
+        } else {
+            log.info("No device types registered currently. So did not run the monitoring task.");
         }
 
     }

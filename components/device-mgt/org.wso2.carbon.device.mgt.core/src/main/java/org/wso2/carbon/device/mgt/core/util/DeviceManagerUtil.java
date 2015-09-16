@@ -24,6 +24,7 @@ import org.wso2.carbon.base.MultitenantConstants;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.device.mgt.common.Device;
 import org.wso2.carbon.device.mgt.common.DeviceManagementException;
+import org.wso2.carbon.device.mgt.common.TransactionManagementException;
 import org.wso2.carbon.device.mgt.core.config.datasource.DataSourceConfig;
 import org.wso2.carbon.device.mgt.core.config.datasource.JNDILookupDefinition;
 import org.wso2.carbon.device.mgt.core.dao.DeviceManagementDAOException;
@@ -102,6 +103,7 @@ public final class DeviceManagerUtil {
     public static boolean registerDeviceType(String typeName,int tenantId, boolean sharedWithAllTenants, String sharedTenants[]) throws DeviceManagementException {
         boolean status;
         try {
+            DeviceManagementDAOFactory.beginTransaction();
             DeviceTypeDAO deviceTypeDAO = DeviceManagementDAOFactory.getDeviceTypeDAO();
             DeviceType deviceType = deviceTypeDAO.getDeviceType(typeName,tenantId);
             if (deviceType == null) {
@@ -130,10 +132,18 @@ public final class DeviceManagerUtil {
 					deviceTypeDAO.shareDeviceType(deviceTypeId, tenantIds);
 				}
             }
+            DeviceManagementDAOFactory.commitTransaction();
             status = true;
         } catch (DeviceManagementDAOException e) {
+            DeviceManagementDAOFactory.rollbackTransaction();
             throw new DeviceManagementException("Error occurred while registering the device type '" +
                     typeName + "'", e);
+        } catch (TransactionManagementException e) {
+            DeviceManagementDAOFactory.rollbackTransaction();
+            throw new DeviceManagementException("SQL occurred while registering the device type '" +
+                    typeName + "'", e);
+        } finally {
+            DeviceManagementDAOFactory.closeConnection();
         }
         return status;
     }
@@ -146,6 +156,7 @@ public final class DeviceManagerUtil {
      */
     public static boolean unregisterDeviceType(String typeName, int tenantId) throws DeviceManagementException {
         try {
+            DeviceManagementDAOFactory.beginTransaction();
             DeviceTypeDAO deviceTypeDAO = DeviceManagementDAOFactory.getDeviceTypeDAO();
             DeviceType deviceType = deviceTypeDAO.getDeviceType(typeName, tenantId);
             if (deviceType != null) {
@@ -153,10 +164,18 @@ public final class DeviceManagerUtil {
                 dt.setName(typeName);
                 deviceTypeDAO.removeDeviceType(typeName, tenantId);
             }
+            DeviceManagementDAOFactory.commitTransaction();
             return true;
         } catch (DeviceManagementDAOException e) {
+            DeviceManagementDAOFactory.rollbackTransaction();
             throw new DeviceManagementException("Error occurred while registering the device type '" +
                     typeName + "'", e);
+        } catch (TransactionManagementException e) {
+            DeviceManagementDAOFactory.rollbackTransaction();
+            throw new DeviceManagementException("SQL occurred while registering the device type '" +
+                    typeName + "'", e);
+        } finally {
+            DeviceManagementDAOFactory.closeConnection();
         }
     }
 

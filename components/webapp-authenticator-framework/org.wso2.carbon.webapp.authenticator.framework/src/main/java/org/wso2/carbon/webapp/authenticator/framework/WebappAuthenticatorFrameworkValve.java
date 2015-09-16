@@ -24,6 +24,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.tomcat.ext.valves.CarbonTomcatValve;
 import org.wso2.carbon.tomcat.ext.valves.CompositeValve;
+import org.wso2.carbon.webapp.authenticator.framework.authenticator.WebappAuthenticator;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -34,12 +35,14 @@ public class WebappAuthenticatorFrameworkValve extends CarbonTomcatValve {
 
     @Override
     public void invoke(Request request, Response response, CompositeValve compositeValve) {
-        String authScheme =
-                request.getContext().findParameter(WebappAuthenticatorFrameworkValve.AUTHENTICATION_SCHEME);
-        if (authScheme == null || "".equals(authScheme)) {
+
+        String authScheme = request.getContext().findParameter(WebappAuthenticatorFrameworkValve.AUTHENTICATION_SCHEME);
+
+        if (authScheme == null || authScheme.isEmpty()) {
             this.getNext().invoke(request, response, compositeValve);
             return;
         }
+
         WebappAuthenticator authenticator = WebappAuthenticatorFactory.getAuthenticator(authScheme);
         if (authenticator == null) {
             String msg = "Failed to load an appropriate authenticator to authenticate the request";

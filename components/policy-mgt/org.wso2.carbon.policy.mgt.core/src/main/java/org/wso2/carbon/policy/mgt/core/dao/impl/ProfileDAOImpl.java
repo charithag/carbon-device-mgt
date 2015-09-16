@@ -28,7 +28,6 @@ import org.wso2.carbon.policy.mgt.core.dao.PolicyManagerDAOException;
 import org.wso2.carbon.policy.mgt.core.dao.ProfileDAO;
 import org.wso2.carbon.policy.mgt.core.dao.ProfileManagerDAOException;
 import org.wso2.carbon.policy.mgt.core.dao.util.PolicyManagementDAOUtil;
-import org.wso2.carbon.policy.mgt.core.util.PolicyManagerUtil;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -91,19 +90,19 @@ public class ProfileDAOImpl implements ProfileDAO {
 
         Connection conn;
         PreparedStatement stmt = null;
-        ResultSet generatedKeys = null;
+      //  ResultSet generatedKeys = null;
         int tenantId = PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantId();
 
         try {
             conn = this.getConnection();
-            String query = "UPDATE DM_PROFILE SET PROFILE_NAME = ? ,TENANT_ID = ?, DEVICE_TYPE_ID = ? , UPDATED_TIME = ? " +
-                    "WHERE ID = ?";
-            stmt = conn.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
-           stmt.setString(1, profile.getProfileName());
-            stmt.setInt(2, tenantId);
-            stmt.setLong(3, profile.getDeviceType().getId());
-            stmt.setTimestamp(4, profile.getUpdatedDate());
-            stmt.setInt(5, profile.getProfileId());
+            String query = "UPDATE DM_PROFILE SET PROFILE_NAME = ? , DEVICE_TYPE_ID = ? , UPDATED_TIME = ? " +
+                    "WHERE ID = ? AND TENANT_ID = ?";
+            stmt = conn.prepareStatement(query);
+            stmt.setString(1, profile.getProfileName());
+            stmt.setLong(2, profile.getDeviceType().getId());
+            stmt.setTimestamp(3, profile.getUpdatedDate());
+            stmt.setInt(4, profile.getProfileId());
+            stmt.setInt(5, tenantId);
 
             int affectedRows = stmt.executeUpdate();
 
@@ -111,29 +110,28 @@ public class ProfileDAOImpl implements ProfileDAO {
                 String msg = "No rows are updated on the profile table.";
                 log.debug(msg);
             }
-            generatedKeys = stmt.getGeneratedKeys();
-
-            if (generatedKeys.next()) {
-                profile.setProfileId(generatedKeys.getInt(1));
-            }
-            // Checking the profile id here, because profile id could have been passed from the calling method.
-            if (profile.getProfileId() == 0) {
-                throw new RuntimeException("Profile id is 0, this could be an issue.");
-            }
+//            generatedKeys = stmt.getGeneratedKeys();
+//
+//            if (generatedKeys.next()) {
+//                profile.setProfileId(generatedKeys.getInt(1));
+//            }
+//            // Checking the profile id here, because profile id could have been passed from the calling method.
+//            if (profile.getProfileId() == 0) {
+//                throw new RuntimeException("Profile id is 0, this could be an issue.");
+//            }
 
         } catch (SQLException e) {
             String msg = "Error occurred while updating the profile (" + profile.getProfileName() + ") in database.";
             log.error(msg, e);
             throw new ProfileManagerDAOException(msg, e);
         } finally {
-            PolicyManagementDAOUtil.cleanupResources(stmt, generatedKeys);
+            PolicyManagementDAOUtil.cleanupResources(stmt, null);
         }
         return profile;
     }
 
     @Override
     public boolean deleteProfile(Profile profile) throws ProfileManagerDAOException {
-
         Connection conn;
         PreparedStatement stmt = null;
 
@@ -142,9 +140,10 @@ public class ProfileDAOImpl implements ProfileDAO {
             String query = "DELETE FROM DM_PROFILE WHERE ID = ?";
             stmt = conn.prepareStatement(query);
             stmt.setInt(1, profile.getProfileId());
-            stmt.executeUpdate();
-            return true;
-
+            if (stmt.executeUpdate() > 0) {
+                return true;
+            }
+            return false;
         } catch (SQLException e) {
             String msg = "Error occurred while deleting the profile from the data base.";
             log.error(msg);
@@ -164,9 +163,10 @@ public class ProfileDAOImpl implements ProfileDAO {
             String query = "DELETE FROM DM_PROFILE WHERE ID = ?";
             stmt = conn.prepareStatement(query);
             stmt.setInt(1, profileId);
-            stmt.executeUpdate();
-            return true;
-
+            if (stmt.executeUpdate() > 0) {
+                return true;
+            }
+            return false;
         } catch (SQLException e) {
             String msg = "Error occurred while deleting the profile from the data base.";
             log.error(msg);
@@ -178,8 +178,7 @@ public class ProfileDAOImpl implements ProfileDAO {
 
 
     @Override
-    public Profile getProfiles(int profileId) throws ProfileManagerDAOException {
-
+    public Profile getProfile(int profileId) throws ProfileManagerDAOException {
         Connection conn;
         PreparedStatement stmt = null;
         ResultSet resultSet = null;
@@ -217,11 +216,10 @@ public class ProfileDAOImpl implements ProfileDAO {
 
     @Override
     public List<Profile> getAllProfiles() throws ProfileManagerDAOException {
-
         Connection conn;
         PreparedStatement stmt = null;
         ResultSet resultSet = null;
-        List<Profile> profileList = new ArrayList<Profile>();
+        List<Profile> profileList = new ArrayList<>();
 
         try {
             //TODO : Fix with TenantID.
@@ -259,12 +257,10 @@ public class ProfileDAOImpl implements ProfileDAO {
 
     @Override
     public List<Profile> getProfilesOfDeviceType(DeviceType deviceType) throws ProfileManagerDAOException {
-
         Connection conn;
         PreparedStatement stmt = null;
         ResultSet resultSet = null;
-        List<Profile> profileList = new ArrayList<Profile>();
-
+        List<Profile> profileList = new ArrayList<>();
         try {
             conn = this.getConnection();
             String query = "SELECT * FROM DM_PROFILE WHERE DEVICE_TYPE_ID = ?";
@@ -283,7 +279,6 @@ public class ProfileDAOImpl implements ProfileDAO {
 
                 profileList.add(profile);
             }
-
         } catch (SQLException e) {
             String msg = "Error occurred while reading the profile list from the database.";
             log.error(msg, e);
@@ -296,12 +291,7 @@ public class ProfileDAOImpl implements ProfileDAO {
 
 
     private Connection getConnection() throws ProfileManagerDAOException {
-        try {
-            return PolicyManagementDAOFactory.getConnection();
-        } catch (PolicyManagerDAOException e) {
-            throw new ProfileManagerDAOException("Error occurred while obtaining a connection from the policy " +
-                    "management metadata repository config.datasource", e);
-        }
+        return PolicyManagementDAOFactory.getConnection();
     }
 
 }

@@ -21,6 +21,7 @@ package org.wso2.carbon.policy.mgt.core.util;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Document;
+import org.wso2.carbon.device.mgt.common.Device;
 import org.wso2.carbon.device.mgt.common.operation.mgt.Operation;
 import org.wso2.carbon.device.mgt.core.operation.mgt.PolicyOperation;
 import org.wso2.carbon.device.mgt.core.operation.mgt.ProfileOperation;
@@ -41,6 +42,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 
@@ -140,9 +142,47 @@ public class PolicyManagerUtil {
         return data;
     }
 
+    public static boolean convertIntToBoolean(int x) {
 
-    public static Cache getCacheManagerImpl(){
-        return Caching.getCacheManagerFactory()
-                .getCacheManager(PolicyManagementConstants.DM_CACHE_MANAGER).getCache(PolicyManagementConstants.DM_CACHE);
+        if (x == 1) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+
+//    public static Cache getCacheManagerImpl() {
+//        return Caching.getCacheManagerFactory()
+//                .getCacheManager(PolicyManagementConstants.DM_CACHE_MANAGER).getCache(PolicyManagementConstants
+//                        .DM_CACHE);
+//    }
+
+
+    public static Cache<Integer, Policy> getPolicyCache(String name){
+        CacheManager manager = getCacheManager();
+        return (manager != null) ? manager.<Integer, Policy>getCache(name) :
+                Caching.getCacheManager().<Integer, Policy>getCache(name);
+    }
+
+    public static Cache<Integer, List<Policy>> getPolicyListCache(String name){
+        CacheManager manager = getCacheManager();
+        return (manager != null) ? manager.<Integer, List<Policy>>getCache(name) :
+                Caching.getCacheManager().<Integer, List<Policy>>getCache(name);
+    }
+
+    private static CacheManager getCacheManager() {
+        return Caching.getCacheManagerFactory().getCacheManager(
+                PolicyManagementConstants.DM_CACHE_MANAGER);
+    }
+
+
+    public static HashMap<Integer, Device> covertDeviceListToMap(List<Device> devices) {
+
+        HashMap<Integer, Device> deviceHashMap = new HashMap<>();
+        for (Device device : devices) {
+            deviceHashMap.put(device.getId(), device);
+        }
+        return deviceHashMap;
     }
 }
