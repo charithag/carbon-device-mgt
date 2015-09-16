@@ -65,7 +65,7 @@ public class PolicyDAOTestCase extends BasePolicyManagementDAOTest {
     @Test
     public void addDeviceType() throws DeviceManagementDAOException {
         DeviceTypeDAO deviceTypeDAO = DeviceManagementDAOFactory.getDeviceTypeDAO();
-        deviceTypeDAO.addDeviceType(DeviceTypeCreator.getDeviceType());
+        deviceTypeDAO.addDeviceType(DeviceTypeCreator.getDeviceType(), -1234, true);
     }
 
 

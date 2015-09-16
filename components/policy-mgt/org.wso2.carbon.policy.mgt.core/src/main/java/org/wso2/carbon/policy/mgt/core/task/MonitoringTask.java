@@ -21,6 +21,7 @@ package org.wso2.carbon.policy.mgt.core.task;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.device.mgt.common.Device;
 import org.wso2.carbon.device.mgt.common.EnrolmentInfo;
 import org.wso2.carbon.device.mgt.core.dao.DeviceManagementDAOFactory;
@@ -63,7 +64,8 @@ public class MonitoringTask implements Task {
         }
 
         try {
-            List<DeviceType> deviceTypes = deviceTypeDAO.getDeviceTypes();
+            int tenantId = PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantId();
+            List<DeviceType> deviceTypes = deviceTypeDAO.getDeviceTypes(tenantId);
             DeviceManagementProviderService deviceManagementProviderService =
                     PolicyManagementDataHolder.getInstance().getDeviceManagementService();
             MonitoringManager monitoringManager = new MonitoringManagerImpl();

@@ -74,7 +74,7 @@ public class DeviceManagementProviderServiceImpl implements DeviceManagementProv
     @Override
     public boolean saveConfiguration(TenantConfiguration configuration) throws DeviceManagementException {
         DeviceManager dms =
-                this.getPluginRepository().getDeviceManagementService(configuration.getType()).getDeviceManager();
+                this.getPluginRepository().getDeviceManagementService(configuration.getType(),this.getTenantId()).getDeviceManager();
         return dms.saveConfiguration(configuration);
     }
 
@@ -86,7 +86,7 @@ public class DeviceManagementProviderServiceImpl implements DeviceManagementProv
     @Override
     public TenantConfiguration getConfiguration(String deviceType) throws DeviceManagementException {
         DeviceManager dms =
-                this.getPluginRepository().getDeviceManagementService(deviceType).getDeviceManager();
+                this.getPluginRepository().getDeviceManagementService(deviceType,this.getTenantId()).getDeviceManager();
         if (dms == null) {
             if (log.isDebugEnabled()) {
                 log.debug("Device type '" + deviceType + "' does not have an associated device management " +
@@ -169,7 +169,7 @@ public class DeviceManagementProviderServiceImpl implements DeviceManagementProv
             int enrolmentId = 0;
             try {
                 DeviceManagementDAOFactory.beginTransaction();
-                DeviceType type = deviceTypeDAO.getDeviceType(device.getType());
+                DeviceType type = deviceTypeDAO.getDeviceType(device.getType(),tenantId);
                 int deviceId = deviceDAO.addDevice(type.getId(), device, tenantId);
                 enrolmentId = enrolmentDAO.addEnrollment(deviceId, device.getEnrolmentInfo(), tenantId);
                 DeviceManagementDAOFactory.commitTransaction();
@@ -209,7 +209,7 @@ public class DeviceManagementProviderServiceImpl implements DeviceManagementProv
             int tenantId = this.getTenantId();
             DeviceManagementDAOFactory.beginTransaction();
 
-            DeviceType type = deviceTypeDAO.getDeviceType(device.getType());
+            DeviceType type = deviceTypeDAO.getDeviceType(device.getType(),tenantId);
             int deviceId = deviceDAO.updateDevice(type.getId(), device, tenantId);
             enrolmentDAO.updateEnrollment(deviceId, device.getEnrolmentInfo(), tenantId);
 
@@ -239,7 +239,7 @@ public class DeviceManagementProviderServiceImpl implements DeviceManagementProv
             DeviceManagementDAOFactory.beginTransaction();
 
             Device device = deviceDAO.getDevice(deviceId, tenantId);
-            DeviceType deviceType = deviceTypeDAO.getDeviceType(device.getType());
+            DeviceType deviceType = deviceTypeDAO.getDeviceType(device.getType(),tenantId);
 
             device.getEnrolmentInfo().setDateOfLastUpdate(new Date().getTime());
             device.getEnrolmentInfo().setStatus(EnrolmentInfo.Status.REMOVED);
@@ -733,7 +733,7 @@ public class DeviceManagementProviderServiceImpl implements DeviceManagementProv
             for (Device device : userDevices) {
                 Device dmsDevice =
                         this.getPluginRepository().getDeviceManagementService(
-                                device.getType()).getDeviceManager().getDevice(
+                                device.getType(),this.getTenantId()).getDeviceManager().getDevice(
                                 new DeviceIdentifier(device.getDeviceIdentifier(), device.getType()));
                 if (dmsDevice != null) {
                     device.setFeatures(dmsDevice.getFeatures());
@@ -773,7 +773,7 @@ public class DeviceManagementProviderServiceImpl implements DeviceManagementProv
         for (Device device : allDevices) {
             Device dmsDevice =
                     this.getPluginRepository().getDeviceManagementService(
-                            device.getType()).getDeviceManager().getDevice(
+                            device.getType(),this.getTenantId()).getDeviceManager().getDevice(
                             new DeviceIdentifier(device.getDeviceIdentifier(), device.getType()));
             if (dmsDevice != null) {
                 device.setFeatures(dmsDevice.getFeatures());
@@ -788,7 +788,7 @@ public class DeviceManagementProviderServiceImpl implements DeviceManagementProv
     @Override
     public void updateDeviceEnrolmentInfo(Device device, EnrolmentInfo.Status status) throws DeviceManagementException {
         try {
-            DeviceType deviceType = deviceTypeDAO.getDeviceType(device.getType());
+            DeviceType deviceType = deviceTypeDAO.getDeviceType(device.getType(),this.getTenantId());
             device.getEnrolmentInfo().setDateOfLastUpdate(new Date().getTime());
             device.getEnrolmentInfo().setStatus(status);
             deviceDAO.updateDevice(deviceType.getId(), device, this.getTenantId());
@@ -837,7 +837,7 @@ public class DeviceManagementProviderServiceImpl implements DeviceManagementProv
         for (Device device : allDevices) {
             Device dmsDevice =
                     this.getPluginRepository().getDeviceManagementService(
-                            device.getType()).getDeviceManager().getDevice(
+                            device.getType(),this.getTenantId()).getDeviceManager().getDevice(
                             new DeviceIdentifier(device.getDeviceIdentifier(), device.getType()));
             if (dmsDevice != null) {
                 device.setFeatures(dmsDevice.getFeatures());
@@ -854,7 +854,7 @@ public class DeviceManagementProviderServiceImpl implements DeviceManagementProv
 
     private DeviceManager getDeviceManager(String deviceType) {
         DeviceManagementService deviceManagementService =
-                this.getPluginRepository().getDeviceManagementService(deviceType);
+                this.getPluginRepository().getDeviceManagementService(deviceType,this.getTenantId());
         if (deviceManagementService == null) {
             if (log.isDebugEnabled()) {
                 log.debug("Device type '" + deviceType + "' does not have an associated device management " +

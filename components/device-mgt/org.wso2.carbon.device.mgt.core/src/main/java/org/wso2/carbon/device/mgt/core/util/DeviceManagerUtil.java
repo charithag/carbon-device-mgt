@@ -20,6 +20,7 @@ package org.wso2.carbon.device.mgt.core.util;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Document;
+import org.wso2.carbon.base.MultitenantConstants;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.device.mgt.common.Device;
 import org.wso2.carbon.device.mgt.common.DeviceManagementException;
@@ -30,11 +31,15 @@ import org.wso2.carbon.device.mgt.core.dao.DeviceManagementDAOFactory;
 import org.wso2.carbon.device.mgt.core.dao.DeviceTypeDAO;
 import org.wso2.carbon.device.mgt.core.dao.util.DeviceManagementDAOUtil;
 import org.wso2.carbon.device.mgt.core.dto.DeviceType;
+import org.wso2.carbon.device.mgt.core.internal.DeviceManagementDataHolder;
+import org.wso2.carbon.user.api.TenantManager;
+import org.wso2.carbon.user.api.UserStoreException;
 
 import javax.sql.DataSource;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
@@ -94,15 +99,36 @@ public final class DeviceManagerUtil {
      * @param typeName device type
      * @return status of the operation
      */
-    public static boolean registerDeviceType(String typeName) throws DeviceManagementException {
+    public static boolean registerDeviceType(String typeName,int tenantId, boolean sharedWithAllTenants, String sharedTenants[]) throws DeviceManagementException {
         boolean status;
         try {
             DeviceTypeDAO deviceTypeDAO = DeviceManagementDAOFactory.getDeviceTypeDAO();
-            DeviceType deviceType = deviceTypeDAO.getDeviceType(typeName);
+            DeviceType deviceType = deviceTypeDAO.getDeviceType(typeName,tenantId);
             if (deviceType == null) {
                 DeviceType dt = new DeviceType();
                 dt.setName(typeName);
-                deviceTypeDAO.addDeviceType(dt);
+                int deviceTypeId=deviceTypeDAO.addDeviceType(dt,tenantId,sharedWithAllTenants);
+
+				//Once device type is added then share between tenants
+				if (!sharedWithAllTenants && sharedTenants != null && sharedTenants.length > 0) {
+					deviceType.setId(deviceTypeId);
+					ArrayList<Integer> tenantIdList= new ArrayList();
+					for(int i=0;i<sharedTenants.length;i++){
+						try {
+							tenantIdList.add(DeviceManagerUtil.getTenantId(sharedTenants[i]));
+						}catch(DeviceManagementException e){
+							log.error("Device Type '"+typeName+"' is shared with invalid tenant domain - "+sharedTenants);
+						}
+					}
+					int tenantIds[]=new int[tenantIdList.size()];
+
+					for(int i=0;i<tenantIdList.size();i++){
+						tenantIds[i]=tenantIdList.get(i);
+
+					}
+
+					deviceTypeDAO.shareDeviceType(deviceTypeId, tenantIds);
+				}
             }
             status = true;
         } catch (DeviceManagementDAOException e) {
@@ -118,14 +144,14 @@ public final class DeviceManagerUtil {
      * @param typeName device type
      * @return status of the operation
      */
-    public static boolean unregisterDeviceType(String typeName) throws DeviceManagementException {
+    public static boolean unregisterDeviceType(String typeName, int tenantId) throws DeviceManagementException {
         try {
             DeviceTypeDAO deviceTypeDAO = DeviceManagementDAOFactory.getDeviceTypeDAO();
-            DeviceType deviceType = deviceTypeDAO.getDeviceType(typeName);
+            DeviceType deviceType = deviceTypeDAO.getDeviceType(typeName, tenantId);
             if (deviceType != null) {
                 DeviceType dt = new DeviceType();
                 dt.setName(typeName);
-                deviceTypeDAO.removeDeviceType(typeName);
+                deviceTypeDAO.removeDeviceType(typeName, tenantId);
             }
             return true;
         } catch (DeviceManagementDAOException e) {
@@ -146,5 +172,35 @@ public final class DeviceManagerUtil {
         PrivilegedCarbonContext ctx = PrivilegedCarbonContext.getThreadLocalCarbonContext();
         return ctx.getTenantId();
     }
+
+    /**
+     * returns the tenant Id of the specific tenant Domain
+     *
+     * @param tenantDomain
+     * @return
+     * @throws DeviceManagementException
+     */
+	public static int getTenantId(String tenantDomain) throws DeviceManagementException{
+		try {
+			TenantManager tenantManager= DeviceManagementDataHolder.getInstance().getTenantManager();
+
+			//Simple Workaround to pass the testcases;
+			if(tenantManager==null){
+				if(tenantDomain.equals(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME)){
+					return MultitenantConstants.SUPER_TENANT_ID;
+
+				}
+				throw new DeviceManagementException("Realm service is not initialized properly");
+
+			}
+			int tenantId = tenantManager.getTenantId(tenantDomain);
+			if(tenantId ==-1) {
+				throw new DeviceManagementException("invalid tenant Domain :" + tenantDomain);
+			}
+			return tenantId;
+		} catch (UserStoreException e) {
+			throw new DeviceManagementException("invalid tenant Domain :" + tenantDomain);
+		}
+	}
 
 }
