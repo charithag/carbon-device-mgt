@@ -43,6 +43,7 @@
         <module>components/certificate-mgt</module>
         <module>components/webapp-authenticator-framework</module>
         <module>components/dynamic-client-registration</module>
+        <module>components/device-analytics</module>
         <module>features/device-mgt</module>
         <module>features/group-mgt</module>
         <module>features/apimgt-extensions</module>
@@ -51,6 +52,7 @@
         <module>features/certificate-mgt</module>
         <module>features/dynamic-client-registration</module>
         <module>features/device-store</module>
+        <module>features/device-analytics</module>
     </modules>
 
     <dependencyManagement>
@@ -191,6 +193,11 @@
             <dependency>
                 <groupId>org.wso2.carbon.devicemgt</groupId>
                 <artifactId>org.wso2.carbon.dynamic.client.web.app.registration</artifactId>
+                <version>${carbon.device.mgt.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wso2.carbon.devicemgt</groupId>
+                <artifactId>org.wso2.carbon.device.mgt.analytics</artifactId>
                 <version>${carbon.device.mgt.version}</version>
             </dependency>
             <dependency>
@@ -1019,6 +1026,27 @@
                 <artifactId>json</artifactId>
                 <version>${json.wso2.version}</version>
             </dependency>
+
+            <!--Carbon Analytics Dependency-->
+            <dependency>
+                <groupId>org.wso2.carbon.analytics-common</groupId>
+                <artifactId>org.wso2.carbon.databridge.commons</artifactId>
+                <version>${carbon.analytics.common.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wso2.carbon.analytics-common</groupId>
+                <artifactId>org.wso2.carbon.databridge.agent</artifactId>
+                <version>${carbon.analytics.common.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wso2.carbon.analytics</groupId>
+                <artifactId>org.wso2.carbon.analytics.api</artifactId>
+                <version>${carbon.analytics.version}</version>
+            </dependency>
+
+            <!--End of Carbon Analytics Dependency-->
         </dependencies>
     </dependencyManagement>
 
@@ -1329,6 +1357,10 @@
         <!-- Nimbus Jose-->
         <nimbus.orbit.version>2.26.1.wso2v3</nimbus.orbit.version>
         <json.wso2.version>2.0.0.wso2v1</json.wso2.version>
+
+        <!--Carbon Analytics-->
+        <carbon.analytics.common.version>5.0.2</carbon.analytics.common.version>
+        <carbon.analytics.version>1.0.3-SNAPSHOT</carbon.analytics.version>
     </properties>
 
 </project>

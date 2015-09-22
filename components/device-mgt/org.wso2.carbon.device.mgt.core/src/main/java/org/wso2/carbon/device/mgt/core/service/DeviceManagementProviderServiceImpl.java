@@ -352,7 +352,7 @@ public class DeviceManagementProviderServiceImpl implements DeviceManagementProv
     @Override public List<DeviceType> getDeviceTypes() throws DeviceManagementException {
         try {
             DeviceManagementDAOFactory.openConnection();
-            return deviceTypeDAO.getDeviceTypes();
+            return deviceTypeDAO.getDeviceTypes(this.getTenantId());
         } catch (DeviceManagementDAOException e) {
             throw new DeviceManagementException("Error occurred while retrieving all device types'" +
                     "' that are being managed within the scope of current tenant", e);
@@ -445,8 +445,10 @@ public class DeviceManagementProviderServiceImpl implements DeviceManagementProv
             messageBuilder.append(messageBody);
             messageBuilder.append(System.getProperty("line.separator")).append(System.getProperty("line.separator"));
             messageBuilder.append(messageFooter1.trim())
-                    .append(System.getProperty("line.separator")).append(messageFooter2.trim()).append(System
-                    .getProperty("line.separator")).append(messageFooter3.trim());
+                    .append(System.getProperty(
+                            "line.separator")).append(messageFooter2.trim()).append(System
+                                                                                            .getProperty(
+                                                                                                    "line.separator")).append(messageFooter3.trim());
 
         } catch (IOException e) {
             throw new DeviceManagementException("Error replacing tags in email template '" +
@@ -503,7 +505,7 @@ public class DeviceManagementProviderServiceImpl implements DeviceManagementProv
             messageBody = messageBody + System.getProperty("line.separator") + url.replaceAll("\\{"
                             + EmailConstants.EnrolmentEmailConstants.DOWNLOAD_URL + "\\}",
                     URLDecoder.decode(emailMessageProperties.getEnrolmentUrl(),
-                            EmailConstants.EnrolmentEmailConstants.ENCODED_SCHEME));
+                                      EmailConstants.EnrolmentEmailConstants.ENCODED_SCHEME));
 
             messageBuilder.append(messageHeader).append(System.getProperty("line.separator"));
             messageBuilder.append(messageBody).append(System.getProperty("line.separator")).append(
@@ -674,7 +676,8 @@ public class DeviceManagementProviderServiceImpl implements DeviceManagementProv
 
     @Override
     public Operation getNextPendingOperation(DeviceIdentifier deviceId) throws OperationManagementException {
-        return DeviceManagementDataHolder.getInstance().getOperationManager().getNextPendingOperation(deviceId);
+        return DeviceManagementDataHolder.getInstance().getOperationManager().getNextPendingOperation(
+                deviceId);
     }
 
     @Override
@@ -749,9 +752,9 @@ public class DeviceManagementProviderServiceImpl implements DeviceManagementProv
     public List<Device> getUnGroupedDevices(String username) throws DeviceManagementException {
         List<Device> devices = new ArrayList<>();
         List<Device> userDevices;
+        int tenantId = CarbonContext.getThreadLocalCarbonContext().getTenantId();
         try {
             DeviceManagementDAOFactory.openConnection();
-            int tenantId = CarbonContext.getThreadLocalCarbonContext().getTenantId();
             userDevices = deviceDAO.getUnGroupedDevices(username, tenantId);
         } catch (DeviceManagementDAOException | SQLException e) {
             throw new DeviceManagementException("Error occurred while retrieving the list of devices that " +
@@ -763,7 +766,7 @@ public class DeviceManagementProviderServiceImpl implements DeviceManagementProv
         for (Device device : userDevices) {
             Device dmsDevice =
                     this.getPluginRepository().getDeviceManagementService(
-                            device.getType()).getDeviceManager().getDevice(
+                            device.getType(), tenantId).getDeviceManager().getDevice(
                             new DeviceIdentifier(device.getDeviceIdentifier(), device.getType()));
             if (dmsDevice != null) {
                 device.setFeatures(dmsDevice.getFeatures());
@@ -778,9 +781,9 @@ public class DeviceManagementProviderServiceImpl implements DeviceManagementProv
     public List<Device> getDevices(int groupId) throws DeviceManagementException {
         List<Device> devices = new ArrayList<>();
         List<Device> userDevices;
+        int tenantId = CarbonContext.getThreadLocalCarbonContext().getTenantId();
         try {
             DeviceManagementDAOFactory.openConnection();
-            int tenantId = CarbonContext.getThreadLocalCarbonContext().getTenantId();
             userDevices = deviceDAO.getDevices(groupId, tenantId);
         } catch (DeviceManagementDAOException | SQLException e) {
             throw new DeviceManagementException("Error occurred while retrieving the list of devices that " +
@@ -792,7 +795,7 @@ public class DeviceManagementProviderServiceImpl implements DeviceManagementProv
         for (Device device : userDevices) {
             Device dmsDevice =
                     this.getPluginRepository().getDeviceManagementService(
-                            device.getType()).getDeviceManager().getDevice(
+                            device.getType(), tenantId).getDeviceManager().getDevice(
                             new DeviceIdentifier(device.getDeviceIdentifier(), device.getType()));
             if (dmsDevice != null) {
                 device.setFeatures(dmsDevice.getFeatures());
@@ -830,7 +833,8 @@ public class DeviceManagementProviderServiceImpl implements DeviceManagementProv
             for (Device device : userDevices) {
 
                 Device dmsDevice = this.getDeviceManager(device.getType()).
-                        getDevice(new DeviceIdentifier(device.getDeviceIdentifier(), device.getType()));
+                        getDevice(new DeviceIdentifier(device.getDeviceIdentifier(),
+                                                       device.getType()));
                 if (dmsDevice != null) {
                     device.setFeatures(dmsDevice.getFeatures());
                     device.setProperties(dmsDevice.getProperties());
@@ -939,7 +943,8 @@ public class DeviceManagementProviderServiceImpl implements DeviceManagementProv
             throw new DeviceManagementException(
                     "Error occurred while fetching the list of devices that matches to status: '" + status + "'", e);
         } catch (SQLException e) {
-            throw new DeviceManagementException("Error occurred while opening a connection to the data source", e);
+            throw new DeviceManagementException("Error occurred while opening a connection to the" +
+                                                        " data source", e);
         } finally {
             DeviceManagementDAOFactory.closeConnection();
         }
