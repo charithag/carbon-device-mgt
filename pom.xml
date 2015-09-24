@@ -1245,7 +1245,7 @@
         <!-- Axis2 -->
         <axis2.osgi.version.range>[1.6.1.wso2v11, 1.7.0)</axis2.osgi.version.range>
         <axis2.orbit.version>1.6.1.wso2v11</axis2.orbit.version>
-        <axis2-transports.wso2.version>1.1.0-wso2v13</axis2-transports.wso2.version>
+        <axis2-transports.wso2.version>1.1.0-wso2v12</axis2-transports.wso2.version>
 
         <jboss-transaction-api.version>1.0.0.Final</jboss-transaction-api.version>
         <carbon.p2.plugin.version>1.5.4</carbon.p2.plugin.version>
@@ -1335,7 +1335,7 @@
         <version.commons.lang>2.6.0.wso2v1</version.commons.lang>
 
         <!-- Carbon API Management -->
-        <carbon.api.mgt.version>1.3.0-SNAPSHOT</carbon.api.mgt.version>
+        <carbon.api.mgt.version>4.3.0-SNAPSHOT</carbon.api.mgt.version>
 
         <!--CXF properties-->
         <cxf.version>2.6.1</cxf.version>
@@ -1360,7 +1360,7 @@
 
         <!--Carbon Analytics-->
         <carbon.analytics.common.version>5.0.2</carbon.analytics.common.version>
-        <carbon.analytics.version>1.0.3-SNAPSHOT</carbon.analytics.version>
+        <carbon.analytics.version>1.0.3</carbon.analytics.version>
     </properties>
 
 </project>
